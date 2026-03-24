@@ -1,88 +1,99 @@
-<div align="center">
-  <img src="resources/icon.png" width="128" alt="ClawWrite Logo">
-</div>
+# ClawWrite
+> A near-instant, system-wide AI writing assistant for Windows.
 
-# ClawWrite 🐾✍️
+## Project Overview
+ClawWrite is an ultra-fast, system-wide AI writing companion designed exclusively for Windows that fundamentally changes how you write, edit, and perfect text. Rather than breaking your focus by context-switching into a separate browser tab or dedicated chat interface, ClawWrite brings the power of Google's Gemini AI directly to your cursor. Whether you're drafting an email in Outlook, chatting in Slack, or coding in an IDE, simply select your text and press a global hotkey. ClawWrite will instantly ingest the text, pop up a beautiful frameless window, and allow you to quickly apply powerful preset commands (like "Make Formal" or "Shorten") or custom prompts. Once satisfied with the AI's output, a single click seamlessly replaces your original highlighted text.
 
-ClawWrite is a system-wide AI-powered writing assistant for Windows. It lets you rewrite, summarize, or enhance text in **any application**—Notepad, Chrome, Slack, Word, etc. Simply select your text, hit a global hotkey, and let Google Gemini AI do the rest.
+## Key Features
+- **Global Hotkey Activation**: Trigger ClawWrite instantly from anywhere in Windows using `Ctrl+Shift+Space`.
+- **Intelligent In-Place Replacement**: Automatically pastes the polished output directly back into your original application with one click.
+- **Enterprise-Grade Architecture**: Designed to bypass strict corporate AppLocker execution policies and Antivirus temporal file restrictions utilizing isolated memory and inline base64 `-EncodedCommand` PowerShell executions.
+- **Persistent Resilient Window**: Features a near-instant window lifecycle. When you press the hotkey, the UI appears immediately. If text capture fails or no text was selected, the UI gracefully falls back to an editable input box allowing seamless prompt continuation.
+- **Robust Preset System**: Ships with 8 built-in core actions (Improve, Formal, Casual, Shorten, Expand, Grammar, Bullets, Summarise) with full support for user-defined custom AI presets.
+- **Clipboard Monitoring (Opt-in)**: A background service you can enable that automatically shows the AI assistant whenever new text is copied to your clipboard.
+- **Recent Chat & History Logging**: Never lose track of your work with localized built-in history storage up to 20 entries.
+- **Premium User Experience**: Designed using a crisp, accessible "Bold Light" system theme featuring glassmorphism elements, intuitive animations, and taskbar visibility.
 
-## ✨ Features
+## Tech Stack
+- **Framework Core**: Electron 29
+- **Frontend Architecture**: React 19, TypeScript 5.4, Vanilla CSS
+- **Build Tooling**: electron-vite (Vite 5), electron-builder (NSIS Installer) 
+- **AI Engine**: Google Gemini API SDK (`gemini-3-flash-preview` by default)
+- **OS Automation**: Win32 P/Invoke via PowerShell 5+ (`user32.dll`)
+- **State Management**: React Hooks & Electron-store (JSON disk persistence)
 
-- **System-Wide Integration**: Works seamlessly across any Windows application with text selection.
-- **Fast & Fluid UI**: A floating, near-instant popup appears right near your cursor with a clean, premium light theme.
-- **Persistent & Accessible**: The popup stays active and taskbar-visible so you can freely multitask, alt-tab, and return to your rewrites without losing state.
-- **Auto-Replace**: Automatically replaces the originally selected text with the AI's output using simulated keystrokes.
-- **Built-in Presets**: 8 quick actions including Improve, Make Formal, Make Casual, Shorten, Expand, Fix Grammar, Bullet Points, and Summarise.
-- **Custom Instructions**: Type any freeform prompt to get exactly what you want out of the text.
-- **Custom Presets**: Create, save, and manage your own reusable rewrite actions.
-- **Rewrite History**: Keeps track of your previous 20 rewrites for easy reuse.
-- **On-the-fly Recapture**: Need to change your selection while the popup is open? Select new text in the original app and hit the **↻ Recapture** button to load it instantly.
+## Getting Started
 
-## 🚀 How It Works
+### Prerequisites
+Before running ClawWrite locally, ensure you have the following installed and configured:
+- **Node.js** (v18 or higher recommended)
+- **npm** or **yarn**
+- A free **Google Gemini API Key** (from [Google AI Studio](https://aistudio.google.com/))
+- **Windows OS**: Windows 10 or 11 (requires access to `user32.dll` and PowerShell 5+)
 
-1. **Select text** in any application.
-2. Press `Ctrl + Shift + Space` (configurable).
-3. The ClawWrite popup appears instantly.
-4. Click a preset (e.g., "Make Formal") or type a custom instruction.
-5. Watch the text transform.
-6. Click **Replace** to auto-paste it back into your original app, or **Copy** to handle the text yourself.
-
-## 🛠️ Prerequisites
-
-- **OS**: Windows 10 or Windows 11 (Relies on Windows PowerShell and Win32 APIs for automation).
-- **Node.js**: v18 or later (for development).
-- **API Key**: A valid [Google Gemini API Key](https://aistudio.google.com/app/apikey).
-
-## ⚙️ Installation & Setup
-
-1. Clone the repository:
+### Installation
+1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/clawwrite.git
-   cd clawwrite
+   git clone https://github.com/[INSERT_GITHUB_USERNAME]/ClawWrite.git
+   cd ClawWrite
    ```
-2. Install dependencies:
+
+2. **Install dependencies:**
    ```bash
    npm install
    ```
-3. Set up your environment variables:
-   Create a `.env` file in the root directory and add your API key:
+
+3. **Configure your API Key:**
+   Create a `.env` file at the root of the project:
    ```env
    GEMINI_API_KEY=your_gemini_api_key_here
    ```
-   *(Alternatively, you can set the API key directly via the visual Settings menu within the ClawWrite app).*
-4. Run in development mode:
+   *(Alternatively, you can set the key directly from the Application Settings UI once it boots)*
+
+4. **Run the development server:**
    ```bash
    npm run dev
    ```
 
-## ⌨️ Global Hotkeys
+5. **Build for Production (Windows Installer):**
+   ```bash
+   npm run dist
+   ```
 
-| Action | Default Shortcut |
-| :--- | :--- |
-| **Summon ClawWrite** | `Ctrl + Shift + Space` |
-| **Close / Back** | `Esc` (when in the popup) |
+## Usage
+### The Core Workflow
+1. Select any text (at least a word) in whatever application you're currently using (e.g., Notepad, Chrome, Slack).
+2. Press the global hotkey: `Ctrl+Shift+Space`
+3. The ClawWrite floating window will instantly materialize next to your cursor, pre-populated with your selected text.
+4. Click a built-in preset like **✨ Improve** or type entirely free-form instructions into the **Custom instruction...** field and hit **Enter**.
+5. Once the AI answers, either modify the returned text in the text area, click **Copy** to save it to your clipboard, or click **⚡ Replace** to forcefully inject it back into the original active window.
 
-*You can configure the global hotkey string via the app's settings menu (accessible by right-clicking the system tray icon).*
+### Utilizing Empty States
+If you run the hotkey without anything highlighted, the application still functions robustly—morphing into a blank canvas where you can securely paste text or request a scratch prompt from Gemini. 
 
-## 🏗️ Architecture
+## Roadmap
+- [ ] **Cross-Platform Support**: Implement native accessibility/AppleScript hooks for macOS users.
+- [ ] **Multiple LLM Providers**: Integrate drop-in support for OpenAI API (GPT-4) and Anthropic (Claude 3.5 Sonnet).
+- [ ] **Shortcut Customizability**: Introduce a visual hotkey-binding UI within the Settings panel.
+- [ ] **Context Awareness**: Optional mode to ingest surrounding active-window text bounds for deeper contextual AI completions.
 
-ClawWrite runs on a powerful, modern stack designed for speed and security:
-- **Frontend**: React 19 + TypeScript 5.4 with a custom-built, premium light theme.
-- **Backend/Main**: Node.js powering the Electron 29 main process.
-- **OS Automation**: Dynamic PowerShell scripts utilizing Win32 P/Invoke (`user32.dll`) for highly reliable text capture (simulated `Ctrl+C`) and auto-replacement (simulated `Ctrl+V`). Includes robust modifier key detection to ensure flawless macro execution.
-- **AI Integration**: Powered by `@google/generative-ai` (`gemini-3-flash-preview`).
+## Contributing
+Contributions are absolutely welcome! We follow a standard "fork-and-pull" workflow. 
 
-For an in-depth breakdown of the three-process IPC model and PowerShell integrations, see [ARCHITECTURE.md](ARCHITECTURE.md).
+1. **Fork** the repository on GitHub.
+2. **Clone** the project to your own machine.
+3. **Commit** changes to your own branch (`git checkout -b feature/AmazingFeature`).
+4. **Push** your work back up to your fork (`git push origin feature/AmazingFeature`).
+5. Submit a **Pull Request** so that we can review your changes.
 
-## 📦 Building for Production
+*Please ensure your code passes linting (`npm run lint` if configured) and strictly conforms to existing React 19 `useEffect` structures preventing memory leaks.* 
 
-Compile and package a Windows NSIS installer using `electron-builder`:
+## License
+Distributed under the **MIT License**. See `LICENSE` for more information.
 
-```bash
-npm run dist
-```
-The installer executable will be generated in the output directory (typically `dist/`).
+## Contact/Acknowledgments
+- **Maintainer**: [INSERT_YOUR_NAME / GITHUB_USERNAME]
+- **Documentation & UI Logic Engine**: Powered by automated expert implementations to bypass Windows environmental restrictions rapidly. 
 
-## 📄 License & Status
-
-This project is built to demonstrate powerful desktop-level AI integrations on Windows. It is currently hardcoded to interface with Google's Gemini API and is not officially affiliated with Google.
+---
+*Created with ❤️ for uninterrupted flow-state writing on Windows.*
