@@ -32,7 +32,11 @@ async function runPowerShell(script: string): Promise<string> {
  * in a single PowerShell operation to minimize latency.
  */
 export async function captureContext(): Promise<{ text: string }> {
-  const before = clipboard.readText();
+  // Store the existing clipboard so we can restore it if nothing is selected
+  const originalClipboard = clipboard.readText();
+  
+  // Explicitly clear the clipboard so we can definitively detect if the simulated Ctrl+C copied anything
+  clipboard.writeText('');
 
   const script = `
 $w = Add-Type -Name W -Namespace N -MemberDefinition @'
@@ -46,7 +50,7 @@ Write-Output "H:$hwnd"
 
 # Wait until modifier keys (Shift=0x10, Ctrl=0x11, Space=0x20) are released
 $timeout = 0
-while (($timeout -lt 1500) -and (
+while (($timeout -lt 2000) -and (
   ([N.W]::GetAsyncKeyState(0x10) -band 0x8000) -or
   ([N.W]::GetAsyncKeyState(0x11) -band 0x8000) -or
   ([N.W]::GetAsyncKeyState(0x20) -band 0x8000)
@@ -66,13 +70,22 @@ Start-Sleep -Milliseconds 10
     const match = stdout.match(/H:(\d+)/);
     if (match) previousWindowHandle = match[1];
 
-    // Wait for clipboard update — shaves off time but stays reliable
-    await new Promise(r => setTimeout(r, 200));
+    // Give the target app slightly more time to dispatch the copy event to the clipboard
+    await new Promise(r => setTimeout(r, 250));
 
     const after = clipboard.readText().trim();
-    return { text: after !== before.trim() ? after : '' };
+    
+    if (after) {
+      return { text: after };
+    } else {
+      // Nothing was selected (or app ignored Ctrl+C) — restore the old clipboard content securely
+      clipboard.writeText(originalClipboard);
+      return { text: '' };
+    }
   } catch (err) {
     console.error('[Capture] PowerShell error:', err);
+    // Restore clipboard on error as well
+    clipboard.writeText(originalClipboard);
     return { text: '' };
   }
 }

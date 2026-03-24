@@ -183,15 +183,15 @@ This is the most platform-specific module. It uses **PowerShell scripts executed
 3. Bypasses standard restrictions on temporary disk execution
 4. Has a 10-second timeout to prevent hangs
 
-**`captureContext()`** — Captures selected text:
-1. Reads clipboard state (before)
-2. Calls PowerShell to:
-   - Get the foreground window handle via `GetForegroundWindow()` (user32.dll)
-   - Wait for modifier keys (Ctrl, Shift, Space) to be released via `GetAsyncKeyState()` polling
-   - Send Ctrl+C via `keybd_event()` (low-level key simulation, more reliable than `SendKeys`)
-3. Waits 250ms for clipboard to update
-4. Compares clipboard to detect new text
-5. Stores the window handle for later use by `autoReplace()`
+**`captureContext()`** — Captures selected text using a "True Capture" strategy:
+1. **Cache & Clear**: Reads the current clipboard content into a local variable, then explicitly clears the system clipboard.
+2. **PowerShell Trigger**: Calls PowerShell via `-EncodedCommand` to:
+   - Get the foreground window handle via `GetForegroundWindow()`.
+   - Wait for modifier keys (Ctrl, Shift, Space) to be released (up to 2000ms).
+   - Send `Ctrl+C` via `keybd_event()`.
+3. **Verify & Detect**: Waits 250ms, then reads the clipboard. Since the clipboard was cleared, any text found is guaranteed to be the new selection (even if it's identical to the previous clipboard state).
+4. **Resilient Restoration**: If no text is found (nothing was selected), it restores the original cached clipboard content to prevent data loss.
+5. Returns the captured text and stores the HWND for `autoReplace()`.
 
 **`autoReplace(newText)`** — Pastes result back:
 1. Writes new text to clipboard
@@ -436,7 +436,9 @@ The API key can also be set at runtime via the Settings UI (stored in electron-s
 
 7. **Recapture uses SetForegroundWindow, not GetForegroundWindow**: During a recapture, the popup has focus so `GetForegroundWindow` would return the ClawWrite window itself. Instead, the stored HWND from the original capture is used with `SetForegroundWindow` to explicitly focus the correct target app before sending Ctrl+C. The clipboard is also cleared first to avoid returning stale content.
 
-8. **Clipboard monitor as opt-in**: Clipboard polling is disabled by default because it's aggressive — it watches everything you copy. Users can enable it via the tray menu.
+8. **True Capture via Clipboard Clearing**: To avoid the common bug where captures fail if the selected text is identical to the current clipboard content, ClawWrite temporarily clears the clipboard before sending `Ctrl+C`. This makes detection deterministic. The original clipboard is automatically restored if the capture returns empty.
+
+9. **Clipboard monitor as opt-in**: Clipboard polling is disabled by default because it's aggressive — it watches everything you copy. Users can enable it via the tray menu.
 
 ---
 
